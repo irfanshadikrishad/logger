@@ -6,11 +6,15 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "bump:major": "npm version major -m \"chore(release): v%s\"",
+    "bump:minor": "npm version minor -m \"chore(release): v%s\"",
+    "bump:patch": "npm version patch -m \"chore(release): v%s\"",
     "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
     "format": "prettier ./ --write",
     "prepare": "husky",
     "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

@@ -61,9 +61,3 @@ Logger.configure({
 - Metadata is made JSON-safe: circular refs, BigInt, Map/Set, Errors, Dates and throwing getters are handled.
 - Logging never throws into your app. Only invalid configuration throws, at construction time.
 - Use `Logger.isLevelEnabled('DEBUG')` to skip building expensive metadata.
-
-#### Development
-
-```bash
-npm ci && npm run typecheck && npm test && npm run build
-```

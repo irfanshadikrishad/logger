@@ -1,0 +1,64 @@
+name: npmjs
+on:
+  release:
+    types: [published]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          registry-url: https://registry.npmjs.org
+      - name: Verify repository.url matches this repository
+        run: |
+          REPO_URL="$(npm pkg get repository.url | tr -d '"')"
+          NORMALIZED="${REPO_URL#git+}"
+          NORMALIZED="${NORMALIZED%.git}"
+          EXPECTED="https://github.com/${GITHUB_REPOSITORY}"
+          if [ "${NORMALIZED,,}" != "${EXPECTED,,}" ]; then
+            echo "::error::package.json repository.url is '${REPO_URL}', expected '${EXPECTED}'"
+            exit 1
+          fi
+      - name: Configure Git
+        run: |
+          git config --global user.name "Irfan Shadik Rishad"
+          git config --global user.email "77362427+irfanshadikrishad@users.noreply.github.com"
+      - name: Bump Version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [[ "$TAG" == *"-major" ]]; then
+            npm version major --no-git-tag-version
+          elif [[ "$TAG" == *"-minor" ]]; then
+            npm version minor --no-git-tag-version
+          else
+            npm version patch --no-git-tag-version
+          fi
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
+      - name: Install Dependencies
+        run: npm ci
+      - name: Publish Package
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Commit the Version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        run: |-
+          git add package.json package-lock.json
+          git commit -m "npmjs: released v${VERSION}"
+          git push origin main
