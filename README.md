@@ -6,9 +6,9 @@ One standard, colourised log format for every Node.js project. ESM-only, TypeScr
 ![NPM Downloads](https://img.shields.io/npm/dw/%40irfanshadikrishad%2Flogger?style=for-the-badge&labelColor=141b23&color=%2385c1dc)
 ![NPM License](https://img.shields.io/npm/l/%40irfanshadikrishad%2Flogger?style=for-the-badge&labelColor=141b23&color=%2385c1dc)
 
-```
+```bash
 2026-11-03 10:15:30.123 AM  INFO     Server started  {"port":3000}
-2026-11-03 10:15:30.140 AM  WARN     [auth]  Login failed  {"userId":42,"password":"[REDACTED]"}
+2026-11-03 10:15:30.140 AM  WARN     [auth]  Login failed  {"userId":42}
 ```
 
 #### Install
@@ -26,7 +26,7 @@ Logger.DEBUG('Loading config')
 Logger.INFO('Server started', { port: 3000 })
 Logger.SUCCESS('Connected to database')
 Logger.WARN('Disk almost full', { freeGb: 2 })
-Logger.ERROR('Query failed', new Error('db down', { cause: err })) // prints stack + cause chain
+Logger.ERROR('Query failed', new Error('db down', { cause: err }))
 Logger.FATAL('Unrecoverable state') // logs only, never exits the process
 
 // Scoped (child) loggers
