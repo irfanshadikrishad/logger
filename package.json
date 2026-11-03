@@ -8,6 +8,7 @@
     "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
     "format": "prettier ./ --write",
+    "prepare": "husky",
     "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "typecheck": "tsc --noEmit"
@@ -48,6 +49,7 @@
     "@irfanshadikrishad/prettier": "^1.3.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.43",
+    "husky": "^9.1.7",
     "jest": "^30.5.2",
     "ts-jest": "^29.4.15",
     "tsc-alias": "^1.9.10",
