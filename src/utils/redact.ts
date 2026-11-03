@@ -1,4 +1,4 @@
-export const REDACTED = '[REDACTED]';
+export const REDACTED = '[REDACTED]'
 
 /** Keys masked by default. Matching ignores case, `_`, `-` and other separators. */
 export const DEFAULT_REDACT_KEYS: readonly string[] = [
@@ -21,15 +21,18 @@ export const DEFAULT_REDACT_KEYS: readonly string[] = [
   'cardNumber',
   'cvv',
   'ssn',
-];
+]
 
-export type Redactor = (key: string) => boolean;
+export type Redactor = (key: string) => boolean
 
-const normalizeKey = (key: string): string => key.toLowerCase().replace(/[^a-z0-9]/g, '');
+const normalizeKey = (key: string): string =>
+  key.toLowerCase().replace(/[^a-z0-9]/g, '')
 
 export function createRedactor(extraKeys: readonly string[] = []): Redactor {
   const keys = new Set(
-    [...DEFAULT_REDACT_KEYS, ...extraKeys].map(normalizeKey).filter((k) => k.length > 0),
-  );
-  return (key) => keys.has(normalizeKey(key));
+    [...DEFAULT_REDACT_KEYS, ...extraKeys]
+      .map(normalizeKey)
+      .filter((k) => k.length > 0)
+  )
+  return (key) => keys.has(normalizeKey(key))
 }

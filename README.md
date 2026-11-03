@@ -16,28 +16,28 @@ npm install @irfanshadikrishad/logger
 ## Usage
 
 ```ts
-import { Logger } from "@irfanshadikrishad/logger";
+import { Logger } from '@irfanshadikrishad/logger'
 
-Logger.DEBUG("Loading config");
-Logger.INFO("Server started", { port: 3000 });
-Logger.SUCCESS("Connected to database");
-Logger.WARN("Disk almost full", { freeGb: 2 });
-Logger.ERROR("Query failed", new Error("db down", { cause: err })); // prints stack + cause chain
-Logger.FATAL("Unrecoverable state"); // logs only, never exits the process
+Logger.DEBUG('Loading config')
+Logger.INFO('Server started', { port: 3000 })
+Logger.SUCCESS('Connected to database')
+Logger.WARN('Disk almost full', { freeGb: 2 })
+Logger.ERROR('Query failed', new Error('db down', { cause: err })) // prints stack + cause chain
+Logger.FATAL('Unrecoverable state') // logs only, never exits the process
 
 // Scoped (child) loggers
-const log = Logger.child("auth");
-log.WARN("Login failed", { userId: 42 }); // ... WARN  [auth]  Login failed
-log.child("oauth").INFO("Token refreshed"); // [auth:oauth]
+const log = Logger.child('auth')
+log.WARN('Login failed', { userId: 42 }) // ... WARN  [auth]  Login failed
+log.child('oauth').INFO('Token refreshed') // [auth:oauth]
 ```
 
 ### Configure once at startup (optional)
 
 ```ts
 Logger.configure({
-  level: "DEBUG", // default: LOG_LEVEL env, else INFO ('SILENT' disables)
-  redact: ["sessionId"], // added to the built-in list (password, token, apiKey, ...)
-});
+  level: 'DEBUG', // default: LOG_LEVEL env, else INFO ('SILENT' disables)
+  redact: ['sessionId'], // added to the built-in list (password, token, apiKey, ...)
+})
 ```
 
 | Option                                      | Default               | Notes                                                        |

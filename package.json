@@ -1,7 +1,17 @@
 {
   "name": "@irfanshadikrishad/logger",
-  "version": "0.1.0",
   "description": "Standardised, colourised, class-based logger for Node.js: one consistent log format across all your projects.",
+  "version": "0.1.0",
+  "author": "irfanshadikrishad (https://www.irfanshadikrishad.dev)",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
+    "format": "prettier ./ --write",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "typecheck": "tsc --noEmit"
+  },
   "keywords": [
     "logger",
     "logging",
@@ -10,15 +20,12 @@
     "typescript",
     "esm"
   ],
-  "license": "MIT",
-  "author": "irfanshadikrishad (https://www.irfanshadikrishad.dev)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/irfanshadikrishad/logger.git"
   },
+  "sideEffects": false,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,35 +33,31 @@
     },
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "sideEffects": false,
-  "engines": {
-    "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
-  "scripts": {
-    "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
-    "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
-  },
+  "prettier": "@irfanshadikrishad/prettier",
   "dependencies": {
     "chalk": "^6.0.1"
   },
   "devDependencies": {
+    "@irfanshadikrishad/prettier": "^1.3.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.43",
     "jest": "^30.5.2",
     "ts-jest": "^29.4.15",
     "tsc-alias": "^1.9.10",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

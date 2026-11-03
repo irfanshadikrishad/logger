@@ -1,6 +1,6 @@
-import { LEVELS } from "@/levels.js";
-import type { LogRecord } from "@/types.js";
-import type { Transport } from "@/transports/Transport.js";
+import { LEVELS } from '@/levels.js'
+import type { Transport } from '@/transports/Transport.js'
+import type { LogRecord } from '@/types.js'
 
 /**
  * ERROR and FATAL go to stderr, everything else to stdout.
@@ -8,7 +8,7 @@ import type { Transport } from "@/transports/Transport.js";
  */
 export class ConsoleTransport implements Transport {
   write(record: LogRecord, formatted: string): void {
-    if (LEVELS[record.level] >= LEVELS.ERROR) console.error(formatted);
-    else console.log(formatted);
+    if (LEVELS[record.level] >= LEVELS.ERROR) console.error(formatted)
+    else console.log(formatted)
   }
 }
