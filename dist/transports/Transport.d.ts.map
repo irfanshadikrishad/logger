@@ -1,1 +1,1 @@
-{"version":3,"file":"Transport.d.ts","sourceRoot":"","sources":["../../src/transports/Transport.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,aAAa,CAAC;AAE7C,kFAAkF;AAClF,MAAM,WAAW,SAAS;IACxB,KAAK,CAAC,MAAM,EAAE,SAAS,EAAE,SAAS,EAAE,MAAM,GAAG,IAAI,CAAC;CACnD"}
+{"version":3,"file":"Transport.d.ts","sourceRoot":"","sources":["../../src/transports/Transport.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,YAAY,CAAA;AAE3C,kFAAkF;AAClF,MAAM,WAAW,SAAS;IACxB,KAAK,CAAC,MAAM,EAAE,SAAS,EAAE,SAAS,EAAE,MAAM,GAAG,IAAI,CAAA;CAClD"}

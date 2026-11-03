@@ -9,7 +9,9 @@ function resolveChalk(colors, env = process.env) {
   if (colors === false) return new Chalk({ level: 0 })
   if (colors === true) {
     const detected = new Chalk().level
-    return new Chalk({ level: detected > 0 ? detected : 1 })
+    return new Chalk({
+      level: detected > 0 ? detected : 1,
+    })
   }
   const noColor = env['NO_COLOR'] !== undefined && env['NO_COLOR'] !== ''
   const forced = env['FORCE_COLOR'] !== undefined && env['FORCE_COLOR'] !== ''
