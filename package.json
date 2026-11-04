@@ -1,7 +1,7 @@
 {
   "name": "@irfanshadikrishad/logger",
   "description": "Standardised, colourised, class-based logger for Node.js: one consistent log format across all your projects.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": "irfanshadikrishad (https://www.irfanshadikrishad.dev)",
   "license": "MIT",
   "scripts": {
