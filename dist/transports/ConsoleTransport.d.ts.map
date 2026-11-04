@@ -1,0 +1,1 @@
+{"version":3,"file":"ConsoleTransport.d.ts","sourceRoot":"","sources":["../../src/transports/ConsoleTransport.ts"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,2BAA2B,CAAA;AAC1D,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,YAAY,CAAA;AAE3C;;;GAGG;AACH,qBAAa,gBAAiB,YAAW,SAAS;IAChD,KAAK,CAAC,MAAM,EAAE,SAAS,EAAE,SAAS,EAAE,MAAM,GAAG,IAAI;CAIlD"}
