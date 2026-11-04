@@ -1,5 +1,4 @@
 npm run build
-npm run format:dist
 git add dist/
 npx lint-staged
 npm test
