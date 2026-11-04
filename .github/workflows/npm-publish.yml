@@ -2,6 +2,9 @@ name: npmjs
 on:
   release:
     types: [published]
+concurrency:
+  group: npmjs-release
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -50,15 +53,37 @@ jobs:
         shell: bash
       - name: Install Dependencies
         run: npm ci
-      - name: Publish Package
-        run: npm publish --provenance --access public
+      - name: Publish Package (skipped if this version is already on npm)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "${NAME}@${VERSION} is already published, skipping publish."
+          else
+            npm publish --provenance --access public
+          fi
       - name: Commit the Version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
         run: |-
           git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "Version files already up to date, nothing to commit."
+            exit 0
+          fi
           git commit -m "npmjs: released v${VERSION}"
-          git push origin main
+
+          # GitHub occasionally returns transient 5xx errors on push. Retry with backoff.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "::warning::Push attempt ${attempt} failed, retrying in $((attempt * 15))s"
+            sleep $((attempt * 15))
+          done
+          echo "::error::Could not push the version commit. v${VERSION} IS published to npm; commit package.json manually."
+          exit 1
