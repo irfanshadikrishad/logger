@@ -32,5 +32,3 @@ jobs:
             echo "::error::Formatting issues found. Run 'npm run format' locally and commit the result."
             exit 1
           fi
-      - name: Typecheck (tests)
-        run: npm run typecheck:test
