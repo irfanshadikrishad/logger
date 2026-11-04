@@ -17,7 +17,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "typecheck": "tsc --noEmit",
-    "typecheck:check": "tsc --noEmit --check"
+    "typecheck:test": "tsc -p tests/tsconfig.json"
   },
   "keywords": [
     "logger",
