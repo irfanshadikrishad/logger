@@ -37,21 +37,21 @@ export interface PrettyFormatterOptions {
 }
 
 const TEXT_STYLES: Record<LogLevel, LevelStyleFn> = {
-  DEBUG: (c) => c.gray,
+  DEBUG: (c) => c.white,
   INFO: (c) => c.cyan,
   SUCCESS: (c) => c.green,
   WARN: (c) => c.yellow,
   ERROR: (c) => c.bold.red,
-  FATAL: (c) => c.bold.white.bgRed,
+  FATAL: (c) => c.bold.black.bgRed,
 }
 
 const BADGE_STYLES: Record<LogLevel, LevelStyleFn> = {
-  DEBUG: (c) => c.bold.white.bgGray,
+  DEBUG: (c) => c.bold.black.bgWhiteBright,
   INFO: (c) => c.bold.black.bgCyan,
   SUCCESS: (c) => c.bold.black.bgGreen,
   WARN: (c) => c.bold.black.bgYellow,
-  ERROR: (c) => c.bold.white.bgRed,
-  FATAL: (c) => c.bold.white.bgRed,
+  ERROR: (c) => c.bold.black.bgRed,
+  FATAL: (c) => c.bold.black.bgRed,
 }
 
 const PRESETS: Record<LevelStyle, Record<LogLevel, LevelStyleFn>> = {
@@ -133,10 +133,8 @@ export class PrettyFormatter implements Formatter {
     if (this.#timestamp) parts.push(c.dim(this.#timestamp(record.timestamp)))
     parts.push(this.#styles[record.level](record.level.padEnd(LEVEL_PAD)))
     if (record.scope) parts.push(c.magenta(`[${record.scope}]`))
-    parts.push(
-      record.level === 'DEBUG' ? c.gray(record.message) : record.message
-    )
-    if (record.meta !== undefined) parts.push(c.gray(stringify(record.meta)))
+    parts.push(record.message)
+    if (record.meta !== undefined) parts.push(c.dim(stringify(record.meta)))
 
     let line = parts.join('  ')
     if (record.error) line += `\n${this.#renderError(record.error, 0)}`
@@ -153,7 +151,7 @@ export class PrettyFormatter implements Formatter {
 
     const lines = head.split('\n').map((l) => c.red(`${INDENT}${l}`))
     if (Object.keys(rest).length > 0)
-      lines.push(c.gray(`${INDENT}${stringify(rest)}`))
+      lines.push(c.dim(`${INDENT}${stringify(rest)}`))
 
     if (cause !== undefined) {
       if (isErrorLike(cause) && depth < MAX_CAUSE_DEPTH) {
