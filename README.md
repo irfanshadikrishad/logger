@@ -1,4 +1,4 @@
-#### Logger
+#### [Logger]
 
 One standard, colourised log format for every Node.js project. ESM-only, TypeScript, Node 20.19+.
 
@@ -11,13 +11,13 @@ One standard, colourised log format for every Node.js project. ESM-only, TypeScr
 2026-11-03 10:15:30.140 AM  WARN     [auth]  Login failed  {"userId":42}
 ```
 
-#### Install
+#### [Install]
 
 ```bash
 npm install @irfanshadikrishad/logger
 ```
 
-#### Usage
+#### [Usage]
 
 ```ts
 import { Logger } from '@irfanshadikrishad/logger'
@@ -35,7 +35,7 @@ log.WARN('Login failed', { userId: 42 }) // ... WARN  [auth]  Login failed
 log.child('oauth').INFO('Token refreshed') // [auth:oauth]
 ```
 
-#### Log levels
+#### [Log levels]
 
 Every message has a level that describes how serious it is. The `level` setting is the **minimum level that gets printed**: that level and everything more severe is shown, everything less severe is silently skipped. It does not mean "show only this level".
 
@@ -115,7 +115,7 @@ if (Logger.isLevelEnabled('DEBUG')) {
 }
 ```
 
-#### Configuration
+#### [Configuration]
 
 **Option 1: config file (no code)**
 
@@ -189,7 +189,7 @@ Pass `configFile: false` to ignore config files, or `configFile: './path/to/file
 | `maxDepth` / `maxItems` / `maxStringLength` | 6 / 100 / 10 000                      | Bounds on metadata size                                      |
 | `configFile`                                | search upward                         | `false` to disable, or a path                                |
 
-#### Behaviour
+#### [Behaviour]
 
 - `ERROR` and `FATAL` go to stderr, everything else to stdout.
 - Timestamps default to local time, 12-hour (`2026-11-03 10:15:30.123 AM`). UTC output is suffixed with ` UTC`.
