@@ -12,7 +12,7 @@
     "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
     "format": "prettier ./ --write",
     "format:check": "prettier ./ --check",
-    "format:dist": "prettier \"dist/**/*.{js,d.ts,json}\" --write",
+    "format:dist": "prettier \"dist/**/*.{js,d.ts,json}\" --write --ignore-path .prettierignore",
     "prepare": "husky",
     "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -66,7 +66,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19"
   },
   "publishConfig": {
     "access": "public",

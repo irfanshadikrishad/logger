@@ -89,7 +89,22 @@ export class Logger {
   }
 
   static #default(): Logger {
-    return (Logger.#shared ??= new Logger())
+    if (Logger.#shared !== undefined) return Logger.#shared
+    try {
+      Logger.#shared = new Logger()
+    } catch (error) {
+      // A broken config file must never crash the host app from inside a log call.
+      try {
+        const reason = error instanceof Error ? error.message : String(error)
+        console.error(
+          `[@irfanshadikrishad/logger] ${reason} Falling back to defaults.`
+        )
+      } catch {
+        /* nothing left to do */
+      }
+      Logger.#shared = new Logger({ configFile: false })
+    }
+    return Logger.#shared
   }
 
   // ───────────────────────── instance API ─────────────────────────

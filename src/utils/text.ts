@@ -41,14 +41,104 @@ export function joinScope(
   return parent ?? child
 }
 
-/** Local time, 12-hour clock: `2026-11-03 10:15:30.123 AM`. */
-export function formatTimestamp(date: Date): string {
+// ───────────────────────── timestamps ─────────────────────────
+
+export interface TimestampOptions {
+  /** `local` (default) or `utc`. UTC output gets a ` UTC` suffix. */
+  timezone?: 'local' | 'utc'
+  /** `12` (default, with AM/PM) or `24`. */
+  hourCycle?: 12 | 24
+  /** Include the date. Default: `true`. */
+  date?: boolean
+  /** Include milliseconds. Default: `true`. */
+  milliseconds?: boolean
+  /** `standard` (default) or `iso` (`2026-11-04T10:15:30.123Z`; always UTC, other options ignored). */
+  format?: 'standard' | 'iso'
+}
+
+export type TimestampFn = (date: Date) => string
+
+/** Default: local time, 12-hour clock: `2026-11-03 10:15:30.123 AM`. */
+export function formatTimestamp(
+  date: Date,
+  options: TimestampOptions = {}
+): string {
+  if (Number.isNaN(date.getTime())) return 'Invalid Date'
+  const {
+    timezone = 'local',
+    hourCycle = 12,
+    date: showDate = true,
+    milliseconds = true,
+    format = 'standard',
+  } = options
+  if (format === 'iso') return date.toISOString()
+
+  const utc = timezone === 'utc'
   const pad = (n: number, len = 2): string => String(n).padStart(len, '0')
-  const hours24 = date.getHours()
-  const hours12 = hours24 % 12 || 12
-  const meridiem = hours24 >= 12 ? 'PM' : 'AM'
-  return (
-    `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-    `${pad(hours12)}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)} ${meridiem}`
-  )
+  const year = utc ? date.getUTCFullYear() : date.getFullYear()
+  const month = (utc ? date.getUTCMonth() : date.getMonth()) + 1
+  const day = utc ? date.getUTCDate() : date.getDate()
+  const hours24 = utc ? date.getUTCHours() : date.getHours()
+  const minutes = utc ? date.getUTCMinutes() : date.getMinutes()
+  const seconds = utc ? date.getUTCSeconds() : date.getSeconds()
+  const ms = utc ? date.getUTCMilliseconds() : date.getMilliseconds()
+
+  const hours = hourCycle === 12 ? hours24 % 12 || 12 : hours24
+  const meridiem = hourCycle === 12 ? (hours24 >= 12 ? ' PM' : ' AM') : ''
+  const time = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}${milliseconds ? `.${pad(ms, 3)}` : ''}${meridiem}`
+  const text = showDate
+    ? `${pad(year, 4)}-${pad(month)}-${pad(day)} ${time}`
+    : time
+  return utc ? `${text} UTC` : text
+}
+
+const TIMESTAMP_KEYS = new Set([
+  'timezone',
+  'hourCycle',
+  'date',
+  'milliseconds',
+  'format',
+])
+
+/**
+ * Validates a timestamp setting once and returns the formatter function
+ * (or `null` when timestamps are disabled). Throws `TypeError` on invalid input.
+ */
+export function resolveTimestamp(
+  input: boolean | TimestampOptions | TimestampFn | undefined
+): TimestampFn | null {
+  if (input === undefined || input === true) return (d) => formatTimestamp(d)
+  if (input === false) return null
+  if (typeof input === 'function') return input
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    throw new TypeError(
+      '"timestamp" must be a boolean, an options object or a function.'
+    )
+  }
+
+  for (const key of Object.keys(input)) {
+    if (!TIMESTAMP_KEYS.has(key)) {
+      throw new TypeError(
+        `Unknown timestamp option "${key}". Allowed: ${[...TIMESTAMP_KEYS].join(', ')}.`
+      )
+    }
+  }
+  const { timezone, hourCycle, date, milliseconds, format } = input
+  if (timezone !== undefined && timezone !== 'local' && timezone !== 'utc') {
+    throw new TypeError('timestamp.timezone must be "local" or "utc".')
+  }
+  if (hourCycle !== undefined && hourCycle !== 12 && hourCycle !== 24) {
+    throw new TypeError('timestamp.hourCycle must be 12 or 24.')
+  }
+  if (date !== undefined && typeof date !== 'boolean')
+    throw new TypeError('timestamp.date must be a boolean.')
+  if (milliseconds !== undefined && typeof milliseconds !== 'boolean') {
+    throw new TypeError('timestamp.milliseconds must be a boolean.')
+  }
+  if (format !== undefined && format !== 'standard' && format !== 'iso') {
+    throw new TypeError('timestamp.format must be "standard" or "iso".')
+  }
+
+  const frozen: TimestampOptions = Object.freeze({ ...input })
+  return (d) => formatTimestamp(d, frozen)
 }

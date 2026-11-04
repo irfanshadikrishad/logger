@@ -1,3 +1,4 @@
+import { loadConfigFile, type FileConfig } from '@/configFile.js'
 import type { Formatter } from '@/formatters/Formatter.js'
 import { PrettyFormatter } from '@/formatters/PrettyFormatter.js'
 import { LEVEL_NAMES, parseLevel, type LevelThreshold } from '@/levels.js'
@@ -7,15 +8,15 @@ import { createRedactor } from '@/utils/redact.js'
 import type { NormalizeOptions } from '@/utils/serialize.js'
 
 export interface LoggerOptions {
-  /** Minimum level to output. Default: `LOG_LEVEL` env var, else `INFO`. `SILENT` disables output. */
+  /** Minimum level to output. Default: `LOG_LEVEL` env var, else config file, else `INFO`. `SILENT` disables output. */
   level?: LevelThreshold
   /** Label added to every line, e.g. `auth` -> `[auth]`. */
   scope?: string
-  /** Default: `PrettyFormatter`. */
+  /** Default: `PrettyFormatter` (configured by the config file, if any). */
   formatter?: Formatter
   /** Default: `[new ConsoleTransport()]`. */
   transports?: Transport[]
-  /** Extra metadata keys to mask, on top of the built-in list. */
+  /** Extra metadata keys to mask, on top of the built-in list and the config file. */
   redact?: string[]
   /** Escape control characters (newlines, ANSI) in messages. Default: `true`. */
   sanitize?: boolean
@@ -25,6 +26,11 @@ export interface LoggerOptions {
   maxItems?: number
   /** Max length of any string. Default: 10 000. */
   maxStringLength?: number
+  /**
+   * `logger.config.*` handling. Default: search upward from the working directory.
+   * `false`: ignore config files. `string`: explicit path (relative to the working directory).
+   */
+  configFile?: boolean | string
 }
 
 /** State shared between a logger and all of its children. */
@@ -56,6 +62,9 @@ function positiveInt(
   return value
 }
 
+/**
+ * Precedence (highest first): explicit options > `LOG_LEVEL` env (level only) > config file > defaults.
+ */
 export function resolveCore(
   options: LoggerOptions,
   env: NodeJS.ProcessEnv = process.env
@@ -63,6 +72,15 @@ export function resolveCore(
   if (typeof options !== 'object' || options === null) {
     throw new TypeError('Logger options must be an object.')
   }
+
+  const file: FileConfig =
+    options.configFile === false
+      ? {}
+      : loadConfigFile(
+          typeof options.configFile === 'string'
+            ? options.configFile
+            : undefined
+        )
 
   let level: LevelThreshold
   if (options.level !== undefined) {
@@ -74,10 +92,18 @@ export function resolveCore(
     }
     level = parsed
   } else {
-    level = parseLevel(env['LOG_LEVEL']) ?? DEFAULTS.level // bad env value must not crash the app
+    // A bad env value must not crash the app: ignore it.
+    level = parseLevel(env['LOG_LEVEL']) ?? file.level ?? DEFAULTS.level
   }
 
-  const formatter = options.formatter ?? new PrettyFormatter()
+  const formatter =
+    options.formatter ??
+    new PrettyFormatter({
+      colors: file.colors,
+      timestamp: file.timestamp,
+      levelStyle: file.levelStyle,
+      styles: file.styles,
+    })
   if (typeof formatter.format !== 'function')
     throw new TypeError('Logger "formatter" must implement format().')
 
@@ -100,16 +126,24 @@ export function resolveCore(
     level,
     formatter,
     transports: Object.freeze([...transports]),
-    sanitize: options.sanitize ?? true,
+    sanitize: options.sanitize ?? file.sanitize ?? true,
     normalize: {
-      maxDepth: positiveInt('maxDepth', options.maxDepth, DEFAULTS.maxDepth),
-      maxItems: positiveInt('maxItems', options.maxItems, DEFAULTS.maxItems),
+      maxDepth: positiveInt(
+        'maxDepth',
+        options.maxDepth ?? file.maxDepth,
+        DEFAULTS.maxDepth
+      ),
+      maxItems: positiveInt(
+        'maxItems',
+        options.maxItems ?? file.maxItems,
+        DEFAULTS.maxItems
+      ),
       maxStringLength: positiveInt(
         'maxStringLength',
-        options.maxStringLength,
+        options.maxStringLength ?? file.maxStringLength,
         DEFAULTS.maxStringLength
       ),
-      isSensitiveKey: createRedactor(redact),
+      isSensitiveKey: createRedactor([...(file.redact ?? []), ...redact]),
     },
     failureReported: false,
   }

@@ -2,8 +2,22 @@ import type { Formatter } from '@/formatters/Formatter.js'
 import { LEVEL_NAMES, type LogLevel } from '@/levels.js'
 import type { LogRecord } from '@/types.js'
 import { stringify, type SerializedError } from '@/utils/serialize.js'
-import { formatTimestamp } from '@/utils/text.js'
+import {
+  resolveTimestamp,
+  type TimestampFn,
+  type TimestampOptions,
+} from '@/utils/text.js'
 import { Chalk, type ChalkInstance, type ColorSupportLevel } from 'chalk'
+
+/**
+ * `text`:   coloured text; only FATAL is a badge (default).
+ * `badge`:  every level is a bold block on a coloured background.
+ * `hybrid`: text for DEBUG/INFO/SUCCESS, badges for WARN/ERROR/FATAL.
+ */
+export type LevelStyle = 'text' | 'badge' | 'hybrid'
+
+/** Receives the (colour-level aware) chalk instance and returns the style for one level. */
+export type LevelStyleFn = (chalk: ChalkInstance) => ChalkInstance
 
 export interface PrettyFormatterOptions {
   /**
@@ -11,8 +25,44 @@ export interface PrettyFormatterOptions {
    * `true`: force colours on. `false`: never colour.
    */
   colors?: boolean
-  /** `true` (default) uses the standard local 12-hour format; `false` hides it; or pass your own. */
-  timestamp?: boolean | ((date: Date) => string)
+  /**
+   * `true` (default): local time, 12-hour. `false`: hidden.
+   * Object: `{ timezone, hourCycle, date, milliseconds, format }`. Function: fully custom.
+   */
+  timestamp?: boolean | TimestampOptions | TimestampFn
+  /** Preset for all levels. Default: `text`. */
+  levelStyle?: LevelStyle
+  /** Per-level overrides on top of the preset, e.g. `{ INFO: (c) => c.blue }`. */
+  styles?: Partial<Record<LogLevel, LevelStyleFn>>
+}
+
+const TEXT_STYLES: Record<LogLevel, LevelStyleFn> = {
+  DEBUG: (c) => c.gray,
+  INFO: (c) => c.cyan,
+  SUCCESS: (c) => c.green,
+  WARN: (c) => c.yellow,
+  ERROR: (c) => c.bold.red,
+  FATAL: (c) => c.bold.white.bgRed,
+}
+
+const BADGE_STYLES: Record<LogLevel, LevelStyleFn> = {
+  DEBUG: (c) => c.bold.white.bgGray,
+  INFO: (c) => c.bold.black.bgCyan,
+  SUCCESS: (c) => c.bold.black.bgGreen,
+  WARN: (c) => c.bold.black.bgYellow,
+  ERROR: (c) => c.bold.white.bgRed,
+  FATAL: (c) => c.bold.white.bgRed,
+}
+
+const PRESETS: Record<LevelStyle, Record<LogLevel, LevelStyleFn>> = {
+  text: TEXT_STYLES,
+  badge: BADGE_STYLES,
+  hybrid: {
+    ...TEXT_STYLES,
+    WARN: BADGE_STYLES.WARN,
+    ERROR: BADGE_STYLES.ERROR,
+    FATAL: BADGE_STYLES.FATAL,
+  },
 }
 
 const LEVEL_PAD = Math.max(...LEVEL_NAMES.map((name) => name.length))
@@ -51,20 +101,29 @@ function isErrorLike(value: unknown): value is SerializedError {
 export class PrettyFormatter implements Formatter {
   readonly #chalk: ChalkInstance
   readonly #styles: Record<LogLevel, ChalkInstance>
-  readonly #timestamp: ((date: Date) => string) | null
+  readonly #timestamp: TimestampFn | null
 
   constructor(options: PrettyFormatterOptions = {}) {
     const c = (this.#chalk = resolveChalk(options.colors))
-    this.#styles = {
-      DEBUG: c.gray,
-      INFO: c.cyan,
-      SUCCESS: c.green,
-      WARN: c.yellow,
-      ERROR: c.bold.red,
-      FATAL: c.bold.white.bgRed,
+
+    const preset = options.levelStyle ?? 'text'
+    if (!Object.hasOwn(PRESETS, preset)) {
+      throw new TypeError(
+        `Invalid levelStyle "${String(preset)}". Expected "text", "badge" or "hybrid".`
+      )
     }
-    const ts = options.timestamp ?? true
-    this.#timestamp = ts === false ? null : ts === true ? formatTimestamp : ts
+    const base = PRESETS[preset]
+    const overrides = options.styles ?? {}
+    const styles = {} as Record<LogLevel, ChalkInstance>
+    for (const level of LEVEL_NAMES) {
+      const fn = overrides[level] ?? base[level]
+      if (typeof fn !== 'function')
+        throw new TypeError(`styles.${level} must be a function.`)
+      styles[level] = fn(c)
+    }
+    this.#styles = styles
+
+    this.#timestamp = resolveTimestamp(options.timestamp)
   }
 
   format(record: LogRecord): string {
