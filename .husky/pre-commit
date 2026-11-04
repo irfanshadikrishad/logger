@@ -1,4 +1,2 @@
-npm run build
-git add dist/
-npx lint-staged
 npm test
+npx lint-staged
