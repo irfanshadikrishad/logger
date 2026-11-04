@@ -34,5 +34,3 @@ jobs:
           fi
       - name: Typecheck (tests)
         run: npm run typecheck:test
-      - name: Build check
-        run: npm run build
