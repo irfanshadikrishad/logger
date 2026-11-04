@@ -11,6 +11,7 @@
     "bump:patch": "npm version patch -m \"chore(release): v%s\"",
     "clean": "node -e \"import('node:fs').then(f=>f.rmSync('dist',{recursive:true,force:true}))\"",
     "format": "prettier ./ --write",
+    "format:check": "prettier ./ --write --check",
     "prepare": "husky",
     "prepublishOnly": "npm run typecheck && npm test && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
