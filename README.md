@@ -61,3 +61,14 @@ Logger.configure({
 - Metadata is made JSON-safe: circular refs, BigInt, Map/Set, Errors, Dates and throwing getters are handled.
 - Logging never throws into your app. Only invalid configuration throws, at construction time.
 - Use `Logger.isLevelEnabled('DEBUG')` to skip building expensive metadata.
+
+#### [Support]
+
+Need help with Logger, encountered a bug, or have an idea for improvement? I'm happy to help!
+
+You can reach out through either of the following channels:
+
+- Report an issue: Create a GitHub [Issue](https://github.com/irfanshadikrishad/logger/issues/new) to report bugs, request features, or discuss technical problems.
+- Email support: [hello@irfanshadikrishad.dev](mailto:hello@irfanshadikrishad.dev?subject=Logger%20-%20Support%20Request) for questions, assistance, or anything else related to Goob.
+
+When reporting a bug, please include relevant details, steps to reproduce the issue or anything that would help fix it.
