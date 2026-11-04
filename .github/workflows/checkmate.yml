@@ -32,3 +32,5 @@ jobs:
             echo "::error::Formatting issues found. Run 'npm run format' locally and commit the result."
             exit 1
           fi
+      - name: Run tests
+        run: npm run test
