@@ -1,7 +1,12 @@
 export type { LoggerOptions } from './config.js'
+export type { LoggerConfigFile } from './configFile.js'
 export type { Formatter } from './formatters/Formatter.js'
 export { PrettyFormatter } from './formatters/PrettyFormatter.js'
-export type { PrettyFormatterOptions } from './formatters/PrettyFormatter.js'
+export type {
+  LevelStyle,
+  LevelStyleFn,
+  PrettyFormatterOptions,
+} from './formatters/PrettyFormatter.js'
 export { LEVELS, LEVEL_NAMES } from './levels.js'
 export type { LevelThreshold, LogLevel } from './levels.js'
 export { Logger } from './Logger.js'
@@ -15,4 +20,5 @@ export {
 } from './utils/redact.js'
 export type { SerializedError } from './utils/serialize.js'
 export { formatTimestamp } from './utils/text.js'
+export type { TimestampFn, TimestampOptions } from './utils/text.js'
 //# sourceMappingURL=index.d.ts.map

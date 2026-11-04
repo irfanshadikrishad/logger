@@ -1,7 +1,33 @@
 import { Chalk } from 'chalk'
 import { LEVEL_NAMES } from '../levels.js'
 import { stringify } from '../utils/serialize.js'
-import { formatTimestamp } from '../utils/text.js'
+import { resolveTimestamp } from '../utils/text.js'
+const TEXT_STYLES = {
+  DEBUG: (c) => c.gray,
+  INFO: (c) => c.cyan,
+  SUCCESS: (c) => c.green,
+  WARN: (c) => c.yellow,
+  ERROR: (c) => c.bold.red,
+  FATAL: (c) => c.bold.white.bgRed,
+}
+const BADGE_STYLES = {
+  DEBUG: (c) => c.bold.white.bgGray,
+  INFO: (c) => c.bold.black.bgCyan,
+  SUCCESS: (c) => c.bold.black.bgGreen,
+  WARN: (c) => c.bold.black.bgYellow,
+  ERROR: (c) => c.bold.white.bgRed,
+  FATAL: (c) => c.bold.white.bgRed,
+}
+const PRESETS = {
+  text: TEXT_STYLES,
+  badge: BADGE_STYLES,
+  hybrid: {
+    ...TEXT_STYLES,
+    WARN: BADGE_STYLES.WARN,
+    ERROR: BADGE_STYLES.ERROR,
+    FATAL: BADGE_STYLES.FATAL,
+  },
+}
 const LEVEL_PAD = Math.max(...LEVEL_NAMES.map((name) => name.length))
 const MAX_CAUSE_DEPTH = 10
 const INDENT = '    '
@@ -35,16 +61,23 @@ export class PrettyFormatter {
   #timestamp
   constructor(options = {}) {
     const c = (this.#chalk = resolveChalk(options.colors))
-    this.#styles = {
-      DEBUG: c.gray,
-      INFO: c.cyan,
-      SUCCESS: c.green,
-      WARN: c.yellow,
-      ERROR: c.bold.red,
-      FATAL: c.bold.white.bgRed,
+    const preset = options.levelStyle ?? 'text'
+    if (!Object.hasOwn(PRESETS, preset)) {
+      throw new TypeError(
+        `Invalid levelStyle "${String(preset)}". Expected "text", "badge" or "hybrid".`
+      )
     }
-    const ts = options.timestamp ?? true
-    this.#timestamp = ts === false ? null : ts === true ? formatTimestamp : ts
+    const base = PRESETS[preset]
+    const overrides = options.styles ?? {}
+    const styles = {}
+    for (const level of LEVEL_NAMES) {
+      const fn = overrides[level] ?? base[level]
+      if (typeof fn !== 'function')
+        throw new TypeError(`styles.${level} must be a function.`)
+      styles[level] = fn(c)
+    }
+    this.#styles = styles
+    this.#timestamp = resolveTimestamp(options.timestamp)
   }
   format(record) {
     const c = this.#chalk

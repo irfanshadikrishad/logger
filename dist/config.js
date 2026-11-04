@@ -1,3 +1,4 @@
+import { loadConfigFile } from './configFile.js'
 import { PrettyFormatter } from './formatters/PrettyFormatter.js'
 import { LEVEL_NAMES, parseLevel } from './levels.js'
 import { ConsoleTransport } from './transports/ConsoleTransport.js'
@@ -15,10 +16,21 @@ function positiveInt(name, value, fallback) {
   }
   return value
 }
+/**
+ * Precedence (highest first): explicit options > `LOG_LEVEL` env (level only) > config file > defaults.
+ */
 export function resolveCore(options, env = process.env) {
   if (typeof options !== 'object' || options === null) {
     throw new TypeError('Logger options must be an object.')
   }
+  const file =
+    options.configFile === false
+      ? {}
+      : loadConfigFile(
+          typeof options.configFile === 'string'
+            ? options.configFile
+            : undefined
+        )
   let level
   if (options.level !== undefined) {
     const parsed = parseLevel(options.level)
@@ -29,9 +41,17 @@ export function resolveCore(options, env = process.env) {
     }
     level = parsed
   } else {
-    level = parseLevel(env['LOG_LEVEL']) ?? DEFAULTS.level // bad env value must not crash the app
+    // A bad env value must not crash the app: ignore it.
+    level = parseLevel(env['LOG_LEVEL']) ?? file.level ?? DEFAULTS.level
   }
-  const formatter = options.formatter ?? new PrettyFormatter()
+  const formatter =
+    options.formatter ??
+    new PrettyFormatter({
+      colors: file.colors,
+      timestamp: file.timestamp,
+      levelStyle: file.levelStyle,
+      styles: file.styles,
+    })
   if (typeof formatter.format !== 'function')
     throw new TypeError('Logger "formatter" must implement format().')
   const transports = options.transports ?? [new ConsoleTransport()]
@@ -51,16 +71,24 @@ export function resolveCore(options, env = process.env) {
     level,
     formatter,
     transports: Object.freeze([...transports]),
-    sanitize: options.sanitize ?? true,
+    sanitize: options.sanitize ?? file.sanitize ?? true,
     normalize: {
-      maxDepth: positiveInt('maxDepth', options.maxDepth, DEFAULTS.maxDepth),
-      maxItems: positiveInt('maxItems', options.maxItems, DEFAULTS.maxItems),
+      maxDepth: positiveInt(
+        'maxDepth',
+        options.maxDepth ?? file.maxDepth,
+        DEFAULTS.maxDepth
+      ),
+      maxItems: positiveInt(
+        'maxItems',
+        options.maxItems ?? file.maxItems,
+        DEFAULTS.maxItems
+      ),
       maxStringLength: positiveInt(
         'maxStringLength',
-        options.maxStringLength,
+        options.maxStringLength ?? file.maxStringLength,
         DEFAULTS.maxStringLength
       ),
-      isSensitiveKey: createRedactor(redact),
+      isSensitiveKey: createRedactor([...(file.redact ?? []), ...redact]),
     },
     failureReported: false,
   }

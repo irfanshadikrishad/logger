@@ -71,7 +71,22 @@ export class Logger {
     return _a.#default().isLevelEnabled(level)
   }
   static #default() {
-    return (_a.#shared ??= new _a())
+    if (_a.#shared !== undefined) return _a.#shared
+    try {
+      _a.#shared = new _a()
+    } catch (error) {
+      // A broken config file must never crash the host app from inside a log call.
+      try {
+        const reason = error instanceof Error ? error.message : String(error)
+        console.error(
+          `[@irfanshadikrishad/logger] ${reason} Falling back to defaults.`
+        )
+      } catch {
+        /* nothing left to do */
+      }
+      _a.#shared = new _a({ configFile: false })
+    }
+    return _a.#shared
   }
   // ───────────────────────── instance API ─────────────────────────
   DEBUG(message, meta) {
