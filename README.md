@@ -115,6 +115,33 @@ if (Logger.isLevelEnabled('DEBUG')) {
 }
 ```
 
+#### [Redact]
+
+`redact` masks the values of sensitive keys in the metadata you pass to a log call. The key stays in the output and the value is replaced with [REDACTED], so you can see the field was there without leaking its content.
+
+**Usage:**
+
+```ts
+Logger.INFO('Login attempt', {
+  email: 'a@b.com',
+  password: 'hunter2',
+  token: 'abc123',
+})
+// ... INFO  Login attempt  {"email":"a@b.com","password":"[REDACTED]","token":"[REDACTED]"}
+```
+
+**Add your own redact keys:**
+
+```json
+// in logger.config.json
+{ "redact": ["sessionId", "phone", "nid"] }
+```
+
+```ts
+// or in code
+Logger.configure({ redact: ['sessionId', 'phone', 'nid'] })
+```
+
 #### [Configuration]
 
 **Option 1: config file (no code)**
